@@ -86,71 +86,124 @@ Se proponen los ejercicios siguientes:
    
 ### 4.2 Escenario global    
  
-En el escenario global, el programa que controla el dron (que llamaremos AutopilotService), además de estar conectado directamente al dron (por ejemplo, a través de la radio de telemetría) está conectado a Internet, de manera que puede recibir peticiones desde otros dispositivos también conectados a Internet, que pueden estar, por tanto, físicamente lejos. La figura ilustra el escenario global.
-El escenario global puede ser interesante en varios casos. En el caso de que el dron tenga un computador abordo (por ejemplo, una Raspberry Pi) conectado por cable al autopiloto, el AutopilotService se ejecutaría en ese computador abordo y podría recibir órdenes por internet. Esto permitiría al dron reaccionar de manera rápida en caso de que se produzcan determinadas situaciones. Por ejemplo, el AutopilotService podría recibir los datos de telemetría del autopiloto, detectar que el dron está peligrosamente cerca de una cierta posición y aterrizar inmediatamente en ese caso. Esta operación también podría implementarse en el escenario local descrito antes, porque los datos de telemetría también pueden llegar a la estación de tierra a través de la radio de telemetría, ser procesados en esa estación de tierra desde la que se enviaría la orden de aterrizaje. Pero ese proceso introduciría un retardo en la operación que podría ser inaceptable.
-Un segundo caso de interés del escenario global sería una aplicación en la que queremos que sean varios dispositivos conectados a internet los que puedan controlar el dron. Eso permitiría, por ejemplo, enviar la orden de despegar desde un dispositivo y la orden de aterrizar desde otro. O podría implementarse un divertido juego en el que el espacio de vuelo se divide en secciones de manera que cada jugador, con su portátil, controla el dron solo cuando éste está dentro de la zona que tiene asignada. 
-Como es lógico, la implementación de un escenario global requiere de algún mecanismo de comunicación a través de Internet, entre el AutopilotService y los dispositivos que deben poder controlar el dron. Para este propósito vamos a utilizar la tecnología MQTT. Se trata de un protocolo de comunicación que utiliza el mecanismo de suscripción/publicación. Los dispositivos conectados pueden publicar mensajes y pueden suscribirse a ciertos tipos de mensajes. Por ejemplo, el AutopilotService puede suscribirse a los mensajes de tipo “despegar” (decimos que el mensaje tiene el topic “despegar”). Cualquiera de los dispositivos conectados puede publicar un mensaje de tipo “despegar” de manera que ese mensaje llegará al AutopilotService que dará la orden al autopiloto. De manera análoga, todos los dispositivos pueden suscribirse a mensajes del tipo “TelemetryInfo” de manera que cuando el AutopilotService tiene un nuevo paquete de datos de telemetría publica un mensaje de ese tipo con los datos y ese mensaje llegará a todos los suscriptores. 
-La comunicación usando MQTT requiere de la intervención de un agente software que se denomina bróker y que se encarga de administrar las publicaciones y las suscripciones y encaminar los mensajes que se publican. Naturalmente, el bróker también tiene que estar conectado a Internet. Existen brokers públicos y gratuitos, como, por ejemplo, el bróker de Hivemq, que puede usarse en la aplicación a desarrollar. 
-Un autopilotService
-El código autopilotService.py implemente un posible servicio de autopiloto. Este código usa la librería DronLink para realizar una variedad de operaciones con el dron, a petición de los clientes que se conecten. El programa se conecta al bróker Hivemq y se suscribe a todas las publicaciones que tengan un topic con el formato:
- '+/autopilotServiceDemo/#'
-Esto indica que el topic puede empezar con cualquier palabra (que indica de dónde viene la publicación) y que puede acabar con cualquier texto (que contendrá la especificación de la operación que debe realizar el servicio.
-Cuando el bróker recibe una publicación cuyo topic tiene el formato especificado reenvía la publicación al servicio y éste ejecuta la función on_message. En esa función se extrae del topic el origen de la publicación, la operación solicitada (command) y se usa la librería DronLink para realizar la operación.
-En algunos casos, al completar la operación solicitada, el servicio publica un mensaje para avisar al cliente de tal circunstancia. Por ejemplo, al completar la operación de despegue, publica el mensaje:
-autopilotServiceDemo/ORIGEN/flying
-siendo ORIGEN el identificador del cliente que ha solicitado los datos de telemetría, que se obtuvo del topic del mensaje en el que se solicitaba la operación de despegue.
-En el caso de que se soliciten datos de telemetría, el autopilotService publicará esos datos cada vez que tenga un nuevo paquete. Para ello usará el topic:
-autopilotServiceDemo/ORIGEN/telemetryInfo
+En el escenario global, el programa que controla el dron (que llamaremos AutopilotService), además de estar conectado directamente al dron (por ejemplo, a través de la radio de telemetría) está conectado a Internet, de manera que puede recibir peticiones desde otros dispositivos también conectados a Internet, que pueden estar, por tanto, físicamente lejos. La figura ilustra el escenario global.   
 
-Dashboard global en Python
-Este dashboard es un cliente que interacciona con el autopilotService. Tiene una interfaz gráfica prácticamente igual al dashboard local. Al iniciar la ejecución se conecta al bróker Hivemq y se suscribe a todos los mensajes cuyo topic sea:
+ <img width="833" height="412" alt="image" src="https://github.com/user-attachments/assets/c130fd14-b5d5-4d04-86d4-2125560a2a15" />
+
+El escenario global puede ser interesante en varios casos. En el caso de que el dron tenga un computador abordo (por ejemplo, una Raspberry Pi) conectado por cable al autopiloto, el AutopilotService se ejecutaría en ese computador abordo y podría recibir órdenes por internet. Esto permitiría al dron reaccionar de manera rápida en caso de que se produzcan determinadas situaciones. Por ejemplo, el AutopilotService podría recibir los datos de telemetría del autopiloto, detectar que el dron está peligrosamente cerca de una cierta posición y aterrizar inmediatamente en ese caso. Esta operación también podría implementarse en el escenario local descrito antes, porque los datos de telemetría también pueden llegar a la estación de tierra a través de la radio de telemetría, ser procesados en esa estación de tierra desde la que se enviaría la orden de aterrizaje. Pero ese proceso introduciría un retardo en la operación que podría ser inaceptable.    
+ 
+Un segundo caso de interés del escenario global sería una aplicación en la que queremos que sean varios dispositivos conectados a internet los que puedan controlar el dron. Eso permitiría, por ejemplo, enviar la orden de despegar desde un dispositivo y la orden de aterrizar desde otro. O podría implementarse un divertido juego en el que el espacio de vuelo se divide en secciones de manera que cada jugador, con su portátil, controla el dron solo cuando éste está dentro de la zona que tiene asignada.    
+ 
+Como es lógico, la implementación de un escenario global requiere de algún mecanismo de comunicación a través de Internet, entre el AutopilotService y los dispositivos que deben poder controlar el dron. Para este propósito vamos a utilizar la tecnología MQTT. Se trata de un protocolo de comunicación que utiliza el mecanismo de suscripción/publicación. Los dispositivos conectados pueden publicar mensajes y pueden suscribirse a ciertos tipos de mensajes. Por ejemplo, el AutopilotService puede suscribirse a los mensajes de tipo “despegar” (decimos que el mensaje tiene el topic “despegar”). Cualquiera de los dispositivos conectados puede publicar un mensaje de tipo “despegar” de manera que ese mensaje llegará al AutopilotService que dará la orden al autopiloto. De manera análoga, todos los dispositivos pueden suscribirse a mensajes del tipo “TelemetryInfo” de manera que cuando el AutopilotService tiene un nuevo paquete de datos de telemetría publica un mensaje de ese tipo con los datos y ese mensaje llegará a todos los suscriptores.   
+ 
+La comunicación usando MQTT requiere de la intervención de un agente software que se denomina bróker y que se encarga de administrar las publicaciones y las suscripciones y encaminar los mensajes que se publican. Naturalmente, el bróker también tiene que estar conectado a Internet. Existen brokers públicos y gratuitos, como, por ejemplo, el bróker de Hivemq, que puede usarse en la aplicación a desarrollar.    
+ 
+#### 4.2.1 Un autopilotService    
+ 
+El código autopilotService.py implemente un posible servicio de autopiloto. Este código usa la librería DronLink para realizar una variedad de operaciones con el dron, a petición de los clientes que se conecten. El programa se conecta al bróker Hivemq y se suscribe a todas las publicaciones que tengan un topic con el formato:   
+```
+ '+/autopilotServiceDemo/#'
+```
+Esto indica que el topic puede empezar con cualquier palabra (que indica de dónde viene la publicación) y que puede acabar con cualquier texto (que contendrá la especificación de la operación que debe realizar el servicio.    
+ 
+Cuando el bróker recibe una publicación cuyo topic tiene el formato especificado reenvía la publicación al servicio y éste ejecuta la función on_message. En esa función se extrae del topic el origen de la publicación, la operación solicitada (command) y se usa la librería DronLink para realizar la operación.    
+ 
+En algunos casos, al completar la operación solicitada, el servicio publica un mensaje para avisar al cliente de tal circunstancia. Por ejemplo, al completar la operación de despegue, publica el mensaje:   
+```
+'autopilotServiceDemo/ORIGEN/flying'
+```
+siendo ORIGEN el identificador del cliente que ha solicitado los datos de telemetría, que se obtuvo del topic del mensaje en el que se solicitaba la operación de despegue.
+En el caso de que se soliciten datos de telemetría, el autopilotService publicará esos datos cada vez que tenga un nuevo paquete. Para ello usará el topic:    
+``` 
+'autopilotServiceDemo/ORIGEN/telemetryInfo'
+```
+#### 4.2.2 Dashboard global en Python    
+ 
+Este dashboard es un cliente que interacciona con el autopilotService. Tiene una interfaz gráfica prácticamente igual al dashboard local. Al iniciar la ejecución se conecta al bróker Hivemq y se suscribe a todos los mensajes cuyo topic sea:    
+```
 'autopilotServiceDemo/interfazGlobal/#'
-Es decir, cualquier mensaje que venga del autopilotServiceDemo y tenga como destino “interfazGlobal” que es como se identifica el dashboard.
-Ahora al pulsar un botón no se usa la librería DronLink para ordenar la operación sino que se publica un mensaje en el borker para que lo reciba el servicio. Por ejemplo, cuando se pulsa el botón de despegue se publica un mensaje con topic:
+```
+Es decir, cualquier mensaje que venga del autopilotServiceDemo y tenga como destino “interfazGlobal” que es como se identifica el dashboard.    
+ 
+Ahora al pulsar un botón no se usa la librería DronLink para ordenar la operación sino que se publica un mensaje en el borker para que lo reciba el servicio. Por ejemplo, cuando se pulsa el botón de despegue se publica un mensaje con topic:    
+```
 'interfazGlobal/autopilotServiceDemo/arm_takeOff'
-Cuando el servicio reciba ese mensaje armará el dron y despegará. Al completar la operación publicará el mensaje de reconocimiento que hemos descrito antes. El dashboard recibirá ese mensaje y entonces cambiará el color del botón.
-Para poner en marcha esta aplicación es necesario tener funcionando el simulador SITL, poner en marcha el servicio y después poner en marcha el dashboard.
-Se proponen los siguientes ejercicios:
+```
+Cuando el servicio reciba ese mensaje armará el dron y despegará. Al completar la operación publicará el mensaje de reconocimiento que hemos descrito antes. El dashboard recibirá ese mensaje y entonces cambiará el color del botón.   
+ 
+Para poner en marcha esta aplicación es necesario tener funcionando el simulador SITL, poner en marcha el servicio y después poner en marcha el dashboard.    
+ 
+Se proponen los siguientes ejercicios:    
+  
 1.	El botón de parar la recepción de datos de telemetría no está funcionando. Detectar el error y corregirlo.
 2.	Los cambios de velocidad y de heading no están operativos en el dashboard. Introducir el código necesario para implementar estas funcionalidades.
 
-WebApp
-Una de las características de las aplicaciones de estación de tierra a las que nos hemos referido en los apartados anteriores es que deben ser instaladas en los dispositivos en las que se van a ejecutar (por ejemplo, un portátil). Eso no es un problema porque las aplicaciones están hechas para eso, para ser instaladas.
-No obstante, hay situaciones en las que puede ser interesante poder interactuar con el dron desde un dispositivo móvil sin tener que instalar ninguna aplicación específica para ello. Ese es el caso de demostraciones en el DronLab para que los visitantes puedan interactuar con el dron desde sus dispositivos móviles sin tener que pedirles que instalen cosas. Para este propósito las webapps son ideales.
-Una webapp es un servidor que sirve páginas web, igual que el servidor que sirve las páginas web de www.upc.edu. Pero las páginas web que sirve no tienen noticias o enlaces a documentos. Tienen botones de tal manera que cuando nos conectamos a la web desde el móvil lo que nos aparece es una página con botones, uno de los cuales, por ejemplo, nos permite hacer despegar el dron. Cuando el usuario pulsa ese botón en su móvil el navegador que se ha usado para acceder a la web hace una petición HTTP al servidor web (por ejemplo, un POST). El servidor detecta que ese POST indica que el usuario ha pulsado el botón y entonces envía al autopilotService la orden para que el dron despegue. La comunicación entre el servidor web y el servicio puede realizarse usando MQTT, tal y como hemos visto ya.  
-Para implementar webapps usaremos el framework Flask. En su versión más básica, la webapp se compone de un servidor en Python que debe ejecutarse en una máquina con IP pública y un fichero HTML (cliente web) que contiene la página web que se enviará al dispositivo móvil que se conecte. En ese fichero se indican los elementos gráficos de la página codificados en HTML (botones, cuadros de texto, etc), los estilos gráficos codificados en CSS (colores, tamaños, etc.) y el código que debe ejecutar el navegador, escrito en Javascript (por ejemplo, lo que hay que hacer cuando el usuario pulse un botón).
-El fichero serverHTTP.py y el fichero indexHTTP que está en la carpeta templates es constituyen un ejemplo de una webapp muy sencilla, cuya interfaz gráfica se muestra en la imagen.
-  
-Cuando se pulsa uno de los botones el código javascript realiza una operación HTTP de tipo post. Al recibir esa petición, el servidor hace la publicación correspondiente en el bróker para avisar al autopilotService. 
-Puesto que el protocolo HTTP se basa en el mecanismo de petición/respuesta, la recepción de los datos de telemetría en el cliente web es un poco más compleja que en casos anteriores. Cuando el cliente se conecta (envía el POST correspondiente) el servidor publica la orden de conectarse y la de recibir datos de telemetría. A partir de ese momento recibirá del servicio los datos de telemetría (a través del bróker) y se irá guardando los valores recibidos en el ultimo paquete de telemetría (solo la altitud y el estado). Por su parte, el cliente web realizará un GET periódicamente solicitando al servidor los datos de telemetría, que recibirá como respuesta al GET (solo altitud y estado).
-Se proponen los siguientes ejercicios:
+#### 4.2.3 WebApp    
+ 
+Una de las características de las aplicaciones de estación de tierra a las que nos hemos referido en los apartados anteriores es que deben ser instaladas en los dispositivos en las que se van a ejecutar (por ejemplo, un portátil). Eso no es un problema porque las aplicaciones están hechas para eso, para ser instaladas.    
+ 
+No obstante, hay situaciones en las que puede ser interesante poder interactuar con el dron desde un dispositivo móvil sin tener que instalar ninguna aplicación específica para ello. Ese es el caso de demostraciones en el DronLab para que los visitantes puedan interactuar con el dron desde sus dispositivos móviles sin tener que pedirles que instalen cosas. Para este propósito las webapps son ideales.    
+ 
+Una webapp es un servidor que sirve páginas web, igual que el servidor que sirve las páginas web de www.upc.edu. Pero las páginas web que sirve no tienen noticias o enlaces a documentos. Tienen botones de tal manera que cuando nos conectamos a la web desde el móvil lo que nos aparece es una página con botones, uno de los cuales, por ejemplo, nos permite hacer despegar el dron. Cuando el usuario pulsa ese botón en su móvil el navegador que se ha usado para acceder a la web hace una petición HTTP al servidor web (por ejemplo, un POST). El servidor detecta que ese POST indica que el usuario ha pulsado el botón y entonces envía al autopilotService la orden para que el dron despegue. La comunicación entre el servidor web y el servicio puede realizarse usando MQTT, tal y como hemos visto ya.     
+ 
+Para implementar webapps usaremos el framework Flask. En su versión más básica, la webapp se compone de un servidor en Python que debe ejecutarse en una máquina con IP pública y un fichero HTML (cliente web) que contiene la página web que se enviará al dispositivo móvil que se conecte. En ese fichero se indican los elementos gráficos de la página codificados en HTML (botones, cuadros de texto, etc), los estilos gráficos codificados en CSS (colores, tamaños, etc.) y el código que debe ejecutar el navegador, escrito en Javascript (por ejemplo, lo que hay que hacer cuando el usuario pulse un botón).    
+
+El fichero serverHTTP.py y el fichero indexHTTP que está en la carpeta templates es constituyen un ejemplo de una webapp muy sencilla, cuya interfaz gráfica se muestra en la imagen.    
+<img width="343" height="558" alt="image" src="https://github.com/user-attachments/assets/c94439d8-8472-4cde-97ae-8c3bf1eb815f" />
+
+Cuando se pulsa uno de los botones el código javascript realiza una operación HTTP de tipo post. Al recibir esa petición, el servidor hace la publicación correspondiente en el bróker para avisar al autopilotService.    
+ 
+Puesto que el protocolo HTTP se basa en el mecanismo de petición/respuesta, la recepción de los datos de telemetría en el cliente web es un poco más compleja que en casos anteriores. Cuando el cliente se conecta (envía el POST correspondiente) el servidor publica la orden de conectarse y la de recibir datos de telemetría. A partir de ese momento recibirá del servicio los datos de telemetría (a través del bróker) y se irá guardando los valores recibidos en el ultimo paquete de telemetría (solo la altitud y el estado). Por su parte, el cliente web realizará un GET periódicamente solicitando al servidor los datos de telemetría, que recibirá como respuesta al GET (solo altitud y estado).   
+ 
+Se proponen los siguientes ejercicios:    
+ 
 1.	El botón de aterrizar tiene un comportamiento diferente al de despegar. Hacer los cambios necesarios para que el botón también se ponga en color amarillo cuando empiece el aterrizaje y se ponga en verde cuando el dron esté en tierra.
 2.	Añadir un nuevo botón para realizar la operación RTL.
-
-El mecanismo de petición/respuesta que caracteriza el protocolo HTTP entre el cliente web y el servidor web hace que el flujo de información no sea muy fluido en el caso de datos que viajan con frecuencia entre uno y otro, como es el caso de los datos de telemetría. 
-Una mejora significativa se obtiene si el script del cliente web, en lugar de hacer peticiones HTTP, hace publicaciones y suscripciones directamente en el bróker que hace de intermediario en la comunicación por MQTT. De esta manera, los paquetes de telemetría que publica el autopilotService llegan también al navegador del móvil igual que a todos los demás dispositivos que se hubieran suscrito. 
-Los ficheros serverMQTT.py y indexMQTT.html (en la carpeta templates) implementan esta segunda versión de la webapp, que tiene la misma interfaz gráfica. En este caso, el código del servidor es extraordinariamente simple, porque solo tiene que servir el código del cliente web (el fichero indexMQTT.html) a los clientes que se conectan. Es el cliente web el que se conecta al bróker, se suscribe a los mensajes del autopilotService y publica las ordenes según el botón que pulsa el usuario.
-Se proponen los siguientes ejercicios:
+    
+El mecanismo de petición/respuesta que caracteriza el protocolo HTTP entre el cliente web y el servidor web hace que el flujo de información no sea muy fluido en el caso de datos que viajan con frecuencia entre uno y otro, como es el caso de los datos de telemetría.    
+ 
+Una mejora significativa se obtiene si el script del cliente web, en lugar de hacer peticiones HTTP, hace publicaciones y suscripciones directamente en el bróker que hace de intermediario en la comunicación por MQTT. De esta manera, los paquetes de telemetría que publica el autopilotService llegan también al navegador del móvil igual que a todos los demás dispositivos que se hubieran suscrito.   
+ 
+Los ficheros serverMQTT.py y indexMQTT.html (en la carpeta templates) implementan esta segunda versión de la webapp, que tiene la misma interfaz gráfica. En este caso, el código del servidor es extraordinariamente simple, porque solo tiene que servir el código del cliente web (el fichero indexMQTT.html) a los clientes que se conectan. Es el cliente web el que se conecta al bróker, se suscribe a los mensajes del autopilotService y publica las ordenes según el botón que pulsa el usuario.    
+ 
+Se proponen los siguientes ejercicios:    
+ 
 1.	El botón de aterrizar tiene un comportamiento diferente al de despegar. Hacer los cambios necesarios para que el botón también se ponga en color amarillo cuando empiece el aterrizaje y se ponga en verde cuando el dron esté en tierra.
 2.	Añadir un nuevo botón para realizar la operación RTL.
 3.	Añadir los elementos necesarios para poder cambiar el heading del dron, igual que puede hacerse en las aplicaciones descritas en apartados anteriores.
-Videostreaming
-Muchas de las aplicaciones de los drones requieren la captura y procesado de imágenes, como, por ejemplo, el stream de video. Naturalmente, esto requiere que el dron tenga instalada una cámara abordo y un trasmisor que envíe la señal de vídeo a la estación de tierra, en la que debe hacer un receptor que permita entregar ese stream de video a la aplicación que lo necesite.
-De nuevo, interesa que el stream de video sea capturado por un servicio (cameraService) que tendrá acceso al receptor y que luego pueda entregarlo al cliente que lo solicite (por ejemplo, un Dashboard como los descritos antes).
-Para implementar la comunicación entre el cameraService y el cliente teóricamente podría usarse MQTT, de manera que el servicio publicaría periódicamente los frames del stream de video que recibiría el cliente para mostrarlos al usuario. Sin embargo, MQTT no está pensado para transmitir datos voluminosos (como los frames) con mucha frecuencia (la necesaria en un stream de video en tiempo real).
-Una alternativa mucho mejor es enviar el stream de video usando WebRTC. Este mecanismo trabaja sobre UDP/IP y, por tanto, no necesita espera las  confirmaciones de paquetes típicas del protocolo TCP/IP, que es el que usa MQTT. El resultado es una mucho mayor fluidez en la transmisión del stream de video.
-Cuando se usa WebRTC, uno de los agentes implicados (emisor o receptor) debe actuar como servidor y el otro como cliente. El cliente se conecta al servidor usando la IP de éste. Para establecer la conexión el cliente y servidor intercambian algunos mensajes usando un websocket. Una vez establecida la conexión el emisor envía el stream de video que llegará al receptor con menor retraso y mejor fluidez, como corresponde al uso de UDP en vez de TCP, aunque con posibles pérdidas de paquetes que, si bien serían inadmisibles si se están enviando instrucciones, no van a afectar significativamente a la experiencia de usuario en el caso de video streaming.
-El fichero cameraService.py contiene el código necesario para capturar el stream de video usando la librería OpenCV y emitirlo por WebRTC.  El código captura el video de la webcam conectada al portátil en el que se ejecute, pero cambiando el valor de camera_id puede capturar el video que llega al receptor que tenga conectado. Al ponerse en marcha, el servicio queda a la espera de que algún cliente solicite el stream de video. Entonces se inicia un sencillo protocolo de coordinación a través de un web socket hasta que puestos de acuerdo se inicia la trasmisión del stream de video, frame a frame (en la función recv).
-El fichero DashboardLocalConVideoStream.py contiene el código de un dashboard que es básicamente igual que el descrito en el apartado x, al que se le ha añadido un botón para conectarse al CameraService y recibir el stream de video para mostrarlo al usuario. El código está preparado para el caso de que tanto el dashboard como el servicio se ejecuten en el mismo portátil (que debe tener una webcam). El sistema funcionaría igual si el servicio de cámara y el dashboard se ejecutan en portátiles diferentes pero conectados a la misma red de área local. En ese caso, hay que sustituir la palabra localhost en la función videoReceiver del Dashboard por la IP del servicio dentro de la red de área local. 
+
+### 4.3 Videostreaming   
+ 
+Muchas de las aplicaciones de los drones requieren la captura y procesado de imágenes, como, por ejemplo, el stream de video. Naturalmente, esto requiere que el dron tenga instalada una cámara abordo y un trasmisor que envíe la señal de vídeo a la estación de tierra, en la que debe hacer un receptor que permita entregar ese stream de video a la aplicación que lo necesite.    
+ 
+De nuevo, interesa que el stream de video sea capturado por un servicio (cameraService) que tendrá acceso al receptor y que luego pueda entregarlo al cliente que lo solicite (por ejemplo, un Dashboard como los descritos antes).    
+ 
+Para implementar la comunicación entre el cameraService y el cliente teóricamente podría usarse MQTT, de manera que el servicio publicaría periódicamente los frames del stream de video que recibiría el cliente para mostrarlos al usuario. Sin embargo, MQTT no está pensado para transmitir datos voluminosos (como los frames) con mucha frecuencia (la necesaria en un stream de video en tiempo real).    
+ 
+Una alternativa mucho mejor es enviar el stream de video usando WebRTC. Este mecanismo trabaja sobre UDP/IP y, por tanto, no necesita espera las  confirmaciones de paquetes típicas del protocolo TCP/IP, que es el que usa MQTT. El resultado es una mucho mayor fluidez en la transmisión del stream de video.    
+ 
+Cuando se usa WebRTC, uno de los agentes implicados (emisor o receptor) debe actuar como servidor y el otro como cliente. El cliente se conecta al servidor usando la IP de éste. Para establecer la conexión el cliente y servidor intercambian algunos mensajes usando un websocket. Una vez establecida la conexión el emisor envía el stream de video que llegará al receptor con menor retraso y mejor fluidez, como corresponde al uso de UDP en vez de TCP, aunque con posibles pérdidas de paquetes que, si bien serían inadmisibles si se están enviando instrucciones, no van a afectar significativamente a la experiencia de usuario en el caso de video streaming.    
+ 
+El fichero cameraService.py contiene el código necesario para capturar el stream de video usando la librería OpenCV y emitirlo por WebRTC.  El código captura el video de la webcam conectada al portátil en el que se ejecute, pero cambiando el valor de camera_id puede capturar el video que llega al receptor que tenga conectado. Al ponerse en marcha, el servicio queda a la espera de que algún cliente solicite el stream de video. Entonces se inicia un sencillo protocolo de coordinación a través de un web socket hasta que puestos de acuerdo se inicia la trasmisión del stream de video, frame a frame (en la función recv).    
+ 
+El fichero DashboardLocalConVideoStream.py contiene el código de un dashboard que es básicamente igual que el descrito en el apartado x, al que se le ha añadido un botón para conectarse al CameraService y recibir el stream de video para mostrarlo al usuario. El código está preparado para el caso de que tanto el dashboard como el servicio se ejecuten en el mismo portátil (que debe tener una webcam). El sistema funcionaría igual si el servicio de cámara y el dashboard se ejecutan en portátiles diferentes pero conectados a la misma red de área local. En ese caso, hay que sustituir la palabra localhost en la función videoReceiver del Dashboard por la IP del servicio dentro de la red de área local.    
+ 
 La transmisión de video por WebRTC puede funcionar también en el caso de que el servicio y el dashboard estén conectados a Internet pero no en la misma red de área local. Si el servicio no está conectado a una IP pública entonces la coordinación entre servicio y dashboard debe realizarse a través de un proxy que si tenga una IP pública conocida por ambos. Pero ese planteamiento se escapa del alcance de la versión 1 y puede quedar como objetivo en las siguientes versiones.
 
+### 4.4 Reconocimiento de objetos    
+ 
+Es habitual que el stream de video se requiera para reconocer objetos en la imagen. Para ello se utilizan redes neuronales convenientemente entrenadas.   
+ 
+Es muy fácil experimentar con la tecnología del reconocimiento de objetos usando alguna red neuronal previamente entrenada y de libre acceso. Un ejemplo es la red neuronal capaz de reconocer cualquiera de los 80 tipos de objetos del data set COCO (Common Objects in Context). Entre esos objetos hay: banana, coche, perro, reloj, donut y así hasta 80.    
+ 
+El fichero DashboardLocalConDeteccion.py contiene el código de un DashBoard que puede activar la detección de tres tipos de objetos: bananas, pizzas y relojes. El código es muy similar al Dashboard anterior, que mostraba el stream de video, pero se le ha añadido el código que usa la red neuronal para detectar los objetos en los frames que recibe. La mecánica es sencilla. El detector de objetos se ha implementado en la clase Detector, que usa la red neuronal pre-entrenada. Cada vez que se recibe un frame se llama a la función de detección indicándole el identificador del objeto que se quiere identificar (cada uno de los 80 objetos del data set de COCO tiene un identificador). El detector retorna una indicación de si lo ha detectado o no y en caso afirmativo las coordenadas del rectángulo dentro del frame en el que se ubica el objeto identificado. El dashboard usa esa información para añadir el rectángulo al frame y mostrarlo al usuario, tal y como muestra la figura.    
+<img width="343" height="558" alt="image" src="https://github.com/user-attachments/assets/fc526fd7-e8d6-48d7-975d-39063aa6dafa" />
 
-Reconocimiento de objetos
-Es habitual que el stream de video se requiera para reconocer objetos en la imagen. Para ello se utilizan redes neuronales convenientemente entrenadas. 
-Es muy fácil experimentar con la tecnología del reconocimiento de objetos usando alguna red neuronal previamente entrenada y de libre acceso. Un ejemplo es la red neuronal capaz de reconocer cualquiera de los 80 tipos de objetos del data set COCO (Common Objects in Context). Entre esos objetos hay: banana, coche, perro, reloj, donut y así hasta 80.
-El fichero DashboardLocalConDeteccion.py contiene el código de un DashBoard que puede activar la detección de tres tipos de objetos: bananas, pizzas y relojes. El código es muy similar al Dashboard anterior, que mostraba el stream de video, pero se le ha añadido el código que usa la red neuronal para detectar los objetos en los frames que recibe. La mecánica es sencilla. El detector de objetos se ha implementado en la clase Detector, que usa la red neuronal pre-entrenada. Cada vez que se recibe un frame se llama a la función de detección indicándole el identificador del objeto que se quiere identificar (cada uno de los 80 objetos del data set de COCO tiene un identificador). El detector retorna una indicación de si lo ha detectado o no y en caso afirmativo las coordenadas del rectángulo dentro del frame en el que se ubica el objeto identificado. El dashboard usa esa información para añadir el rectángulo al frame y mostrarlo al usuario.
-El proceso de detección se toma su tiempo. Si la detección se aplica a cada frame entonces la fluidez del stream de video va a verse muy afectada. El problema se reduce si aplicamos la detección solo a un frame de cada 100. Eso es justamente lo que hace el programa. Cuando detecta el objeto en un frame dibuja el rectángulo y lo añade a los 100 frames que vienen después antes de volver a intentar la detección. 
-Se proponen los siguientes ejercicios:
+ 
+El proceso de detección se toma su tiempo. Si la detección se aplica a cada frame entonces la fluidez del stream de video va a verse muy afectada. El problema se reduce si aplicamos la detección solo a un frame de cada 100. Eso es justamente lo que hace el programa. Cuando detecta el objeto en un frame dibuja el rectángulo y lo añade a los 100 frames que vienen después antes de volver a intentar la detección.   
+ 
+Se proponen los siguientes ejercicios:    
+ 
 1.	Procesar 1 de cada 100 frames hace que el impacto en la fluidez sea despreciable, pero introduce un retardo en la detección del objeto. Experimentar con valores más bajos de ese periodo hasta encontrar un mejor compromiso entre fluidez y retardo en la detección.
 2.	Añadir botones para reconocer otros objetos del data set de COCO.
 
