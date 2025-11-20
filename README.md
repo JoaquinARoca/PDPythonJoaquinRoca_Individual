@@ -28,8 +28,8 @@ La versión 4 será la versión final con todas las funcionalidades previstas. A
 Git y GitHub son herramientas que facilitan la gestión de versiones, el mantenimiento de código en la nube y el trabajo cooperativo en el desarrollo de código o documentos.   
 
 En este vídeo se explica lo esencial para instalarse las herramientas y entender los principios de funcionamiento:   
-[![](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DnBh4BNyI6vw)](https://www.youtube.com/watch?v=nBh4BNyI6vw)
 
+[![](https://markdown-videos-api.jorgenkh.no/url?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DI_fQlby426k)](https://www.youtube.com/list=PLj_C4NVXL2Sgq1N5G1MGbSjsXUIVGZ4S3)
 Git puede instalarse desde esta página:   
 https://git-scm.com/downloads
 
