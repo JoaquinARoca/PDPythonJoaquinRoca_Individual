@@ -2,7 +2,7 @@
  
 ## 1. Introducción   
 
-El proceso que se describe en este guía tiene por objetivo el desarrollo de una aplicación de control de un dron (o varios) que pueda demostrarse en el DroneLab del Campus del Baix Llobregat. Esta aplicación se desarrollará en equipos de 3 o 4 personas.
+El proceso que se describe en esta guía tiene por objetivo el desarrollo de una aplicación de control de un dron (o varios) que pueda demostrarse en el DroneLab del Campus del Baix Llobregat. Esta aplicación se desarrollará en equipos de 3 o 4 personas.
 El proceso permite el aprendizaje de una variedad de conceptos, tecnologías y herramientas. En particular, se aprende (entre otras cosas):   
 
 *	Cómo es un dron cuatrimotor y qué componentes tiene
@@ -14,7 +14,7 @@ El proceso permite el aprendizaje de una variedad de conceptos, tecnologías y h
 
 La aplicación tiene 4 versiones. La versión 1 está muy guiada. Se desarrolla paso a paso siguiendo las instrucciones de esta guía. En cada paso se introduce algún concepto/herramienta/tecnología nueva. Este repositorio proporciona los códigos implicados en cada paso de manera que basta comprobar que el código funciona correctamente. La guía también propone sencillos ejercicios que requieren la modificación del código proporcionado para corregir algún mal funcionamiento o para introducir alguna nueva funcionalidad. Es muy conveniente que cada miembro del equipo desarrolle de forma individual esta primera versión, aunque naturalmente compartiendo dudas y progresos con los compañeros de equipo y con los profesores.    
  
-La versión 2 tiene unos requisitos prefijados, pero está mucho menos guiada que la versión 1. También se proporcionarán algunos códigos útiles pero la tarea fundamental consistirá en la investigación y experimentación necesarias para implementar las nuevas funcionalidades. El trabajo de la versión 2 se beneficiará mucho de un buen reparto de tareas entre los miembros del equipo.    
+La versión 2 tiene unos requisitos prefijados, pero está mucho menos guiada que la versión 1. También se proporcionarán algunos recursos útiles pero la tarea fundamental consistirá en la investigación y experimentación necesarias para implementar las nuevas funcionalidades. El trabajo de la versión 2 se beneficiará mucho de un buen reparto de tareas entre los miembros del equipo.    
  
 Acabada la versión 2 cada equipo deberá decidir las funcionalidades que tendrá la versión final de su aplicación. En esta guía se proporcionarán algunas ideas que pueden resultar de inspiración. Cada equipo deberá decidir también que subconjunto de las funcionalidades estará ya disponible en la versión 3, que será una versión intermedia pero que deberá poder ser demostrada en el DroneLab.     
  
@@ -52,7 +52,8 @@ También será necesario programar en Visual C#. La herramienta recomendada para
 https://visualstudio.microsoft.com/es/downloads/
 
 
-### 3.5 Repo taller teleco-renta, que incluye una breve descripción de cómo es el dron    
+### 3.5 Tutorial sobre Mission Planner   
+ 
 En este repositorio [![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-Tutorial_Mission_Planner-blue.svg)](https://github.com/dronsEETAC/telecoRenta_taller_de_drones.git)  puede encontrarse una guía que permite iniciarse en el uso de Mission Planner. También contiene una descripción de los aspectos más básicos del dron en el que se basa el proyecto a desarrollar.  
 
 ### 3.6 Librería DronLink    
