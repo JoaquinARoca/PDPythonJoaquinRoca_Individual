@@ -60,7 +60,10 @@ En este repositorio [![DroneEngineeringEcosystem Badge](https://img.shields.io/b
 Esta librería facilita la programación en Python de las operaciones necesarias para controlar el dron. Todos los detalles pueden encontrarse en este repositorio [![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-DronLink-blue.svg)](https://github.com/dronsEETAC/DronLink.git). Es importante leer en detalle el apartado en el que se describe el modelo de programación. También pueden ser de utilidad los diferentes programas de test que ilustran la manera de usar las diferentes funciones de la librería.    
 
 ### 3.7 Librería csDronLink    
-Esta es una implementación de DronLink para C#. Toda la información (incluyendo ejemplos de uso) puede encontrarse en este repositorio [![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-csDroneLink-blue.svg)](https://github.com/dronsEETAC/csDroneLink.git). Es importante tener en cuenta que esta librería está menos desarrollada que DronLink y tiene menos funcionalidades.    
+Esta es una implementación de DronLink para C#. Toda la información (incluyendo ejemplos de uso) puede encontrarse en este repositorio [![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-csDroneLink-blue.svg)](https://github.com/dronsEETAC/csDroneLink.git). Es importante tener en cuenta que esta librería está menos desarrollada que DronLink y tiene menos funcionalidades.  
+
+### 3.8 Comunicaciones
+Esta es una lectura para aprender lo básico sobre las diferentes tecnologías y herramientas relacionadas con las comunicaciones entre los diferentes elementos que pueden intervenir en el proyecto a desarrollar.   
 
 ## 4. Versión 1    
 
