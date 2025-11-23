@@ -15,37 +15,27 @@ class VideoReceiver:
         self.track = None
 
     async def handle_track(self, track):
-        print("Inside handle track")
         self.track = track
         frame_count = 0
         while True:
             try:
-                print("Waiting for frame...")
+                print("Espero un frame frame...")
                 frame = await asyncio.wait_for(track.recv(), timeout=5.0)
                 frame_count += 1
-                print(f"Received frame {frame_count}")
 
-                if isinstance(frame, VideoFrame):
-                    print(f"Frame type: VideoFrame, pts: {frame.pts}, time_base: {frame.time_base}")
-                    frame = frame.to_ndarray(format="bgr24")
-                elif isinstance(frame, np.ndarray):
-                    print(f"Frame type: numpy array")
-                else:
-                    print(f"Unexpected frame type: {type(frame)}")
-                    continue
-
+                frame = frame.to_ndarray(format="bgr24")
                 cv2.imshow("Frame", frame)
 
                 # Exit on 'q' key press
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
             except asyncio.TimeoutError:
-                print("Timeout waiting for frame, continuing...")
+                print("Timeout")
             except Exception as e:
-                print(f"Error in handle_track: {str(e)}")
+                print(f"Error en handle_track: {str(e)}")
                 if "Connection" in str(e):
                     break
-        print("Exiting handle_track")
+        print("Salgo del track")
 
 
 async def run(pc, signaling):
@@ -54,47 +44,34 @@ async def run(pc, signaling):
     @pc.on("track")
     def on_track(track):
         if isinstance(track, MediaStreamTrack):
-            print(f"Receiving {track.kind} track")
+            print(f"Recibo el track con el video stream")
             asyncio.ensure_future(video_receiver.handle_track(track))
 
-    @pc.on("datachannel")
-    def on_datachannel(channel):
-        print(f"Data channel established: {channel.label}")
-
-    @pc.on("connectionstatechange")
-    async def on_connectionstatechange():
-        print(f"Connection state is {pc.connectionState}")
-        if pc.connectionState == "connected":
-            print("WebRTC connection established successfully")
-
-    print("Waiting for offer from sender...")
+    print("Esperando la oferta...")
     offer = await signaling.receive()
-    print("Offer received")
+    print("Oferta recibida")
     await pc.setRemoteDescription(offer)
-    print("Remote description set")
-
     answer = await pc.createAnswer()
-    print("Answer created")
     await pc.setLocalDescription(answer)
-    print("Local description set")
 
     await signaling.send(pc.localDescription)
-    print("Answer sent to sender")
+    print("Respuesta enviada")
 
-    print("Waiting for connection to be established...")
+    print("Espero conexión ...")
     while pc.connectionState != "connected":
         await asyncio.sleep(0.1)
 
-    print("Connection established, waiting for frames...")
+    print("Conexión establecida, espero frames...")
     await asyncio.sleep(100)  # Wait for 35 seconds to receive frames
 
-    print("Closing connection")
+    print("Cierro conexión")
 
 
 async def videoReceiver():
     # el receptor actua de cliente que debe conectarse al emisor que actua de servidor
     IP_server = "localhost"
     signaling = TcpSocketSignaling(IP_server, 9999)
+    # prepado la estructura para la conexión
     pc = RTCPeerConnection()
 
     global video_receiver
