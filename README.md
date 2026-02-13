@@ -86,7 +86,7 @@ vehicle = connect (connection_string, wait_ready = True, baud = 57600)
 ```
 En definitiva cambiamos el string de conexión y la velocidad de transmisión (que es menor cuando se usa la radio de telemetría). Con estos cambios, nuestros programas deberían funcionar igual que lo hacían con el simulador. Habitualmente, las diferencias de comportamiento se deben a las diferentes velocidades con las que ocurren las cosas con el dron real, que podrían dar lugar a errores que no se habían observado con el simulador.   
 
-### 12.2 Conexión simultánea de nuestro programa y Mission Planner    
+### 3.10 Conexión simultánea de nuestro programa y Mission Planner    
 
 Es importante comprender que si Mission Planner está conectado al dron a través de la radio de telemetría entonces nuestro programa no podrá conectarse al dron porque el puerto del portátil (COM12 en el ejemplo anterior) ya está ocupado. Por la misma razón, si nuestro programa se está ejecutando no podremos conectar Mission Planner al dron (puerto ocupado).    
  
