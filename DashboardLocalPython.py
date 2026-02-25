@@ -18,7 +18,7 @@ def showTelemetryInfo (telemetry_info):
 
 
 def connect ():
-    global dron, speedSldr
+    global dron, speedSldr, altSldr
     connection_string ='tcp:127.0.0.1:5763'
     baud = 115200
     dron.connect(connection_string,baud)
@@ -28,6 +28,7 @@ def connect ():
     connectBtn['bg'] = 'green'
     # fijamos la velocidad por defecto en el slider
     speedSldr.set(1)
+    altSldr.set(5)
 
 def arm ():
     global dron
@@ -45,9 +46,9 @@ def inTheAir ():
 
 def takeoff ():
     global dron
-    # despegamos a una altura de 5 metros
+    # despegamos a una altura designada (metros)
     # llamada no bloqueante. Cuando alcance la altura indicada ejecutará la función inTheAir
-    dron.takeOff (5, blocking = False,  callback = inTheAir)
+    dron.takeOff (int(altSldr.get()), blocking = False,  callback = inTheAir)
     takeOffBtn['text'] = 'Despegando...'
     takeOffBtn['fg'] = 'black'
     takeOffBtn['bg'] = 'yellow'
@@ -222,10 +223,10 @@ def crear_ventana():
     speedSldr.bind("<ButtonRelease-1>", changeNavSpeed)
 
     # slider para elegir la altura del dron
-    speedSldr = tk.Scale(ventana, label="Altura (m):", resolution=1, from_=1, to=80, tickinterval=5,
+    altSldr = tk.Scale(ventana, label="Altura (m):", resolution=1, from_=1, to=80, tickinterval=5,
                           orient=tk.HORIZONTAL)
-    speedSldr.grid(row=8, column=0, columnspan=2, padx=5, pady=5, sticky=tk.N + tk.S + tk.E + tk.W)
-    speedSldr.bind("<ButtonRelease-1>", changeNavAlt)
+    altSldr.grid(row=8, column=0, columnspan=2, padx=5, pady=5, sticky=tk.N + tk.S + tk.E + tk.W)
+    altSldr.bind("<ButtonRelease-1>", changeNavAlt)
 
     # botones para pedir/parar datos de telemetría
     StartTelemBtn = tk.Button(ventana, text="Empezar a enviar telemetría", bg="dark orange", command=startTelem)
