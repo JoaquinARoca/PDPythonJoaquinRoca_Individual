@@ -109,7 +109,7 @@ def changeNavSpeed (event):
 def changeNavAlt(event):
     global dron
     global altSldr
-    dron.change_altitude(int (altSldr.get()))
+    dron.change_altitude(int (altSldr.get()), blocking=False)
 
 def crear_ventana():
     global dron
@@ -258,10 +258,8 @@ def crear_ventana():
     stateLbl = tk.Label(telemetryFrame, text='Estado')
     stateLbl.grid(row=0, column=2,  padx=5, pady=5, sticky=tk.N + tk.S + tk.E + tk.W)
 
-    SpeedLbl = tk.Label(telemetryFrame,text='Velocidad')
+    SpeedLbl = tk.Label(telemetryFrame,text='Velocidad \n de tierra')
     SpeedLbl.grid(row=0, column=3,  padx=5, pady=5, sticky=tk.N + tk.S + tk.E + tk.W)
-
-
 
     # etiquetas para colocar aqui los datos cuando se reciben
     altShowLbl = tk.Label(telemetryFrame, text='')
