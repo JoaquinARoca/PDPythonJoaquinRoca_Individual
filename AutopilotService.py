@@ -16,6 +16,7 @@ def publish_event (event):
 def publish_telemetry_info (telemetry_info):
     # cuando reciba datos de telemetría los publico
     global sending_topic, client
+    #print(f'Publicacion reciente {telemetry_info}')
     client.publish(sending_topic + '/telemetryInfo', json.dumps(telemetry_info))
 
 def on_message(cli, userdata, message):
@@ -42,7 +43,7 @@ def on_message(cli, userdata, message):
             print ('vamos a armar')
             dron.arm()
             print ('vamos a despegar')
-            dron.takeOff(5, blocking=False, callback=publish_event, params='flying')
+            dron.takeOff(float(splited[3]) if len(splited) > 3 else 5, blocking=False, callback=publish_event, params='flying')
 
     if command == 'go':
         if dron.state == 'flying':
