@@ -57,6 +57,7 @@
 
         <!-- Botón Aterrizar -->
         <button id="botonAterrizar" class="boton" onclick="aterrizarDron()">Aterrizar Dron</button>
+        <button id="RTL" class="boton" onclick="rtlDron()">RTL</button>
 
         <!-- Botones de dirección -->
         <div class="direction">
@@ -117,6 +118,14 @@ function aterrizarDron() {
         document.getElementById('botonAterrizar').classList.add('boton-amarillo');
     }}).then(() => {{
         document.getElementById('botonAterrizar').textContent = "Aterrizando...";
+    }});
+}
+
+function rtlDron() {
+    post("/rtl").then(() => {{
+        document.getElementById('RTL').classList.add('boton-amarillo');
+    }}).then(() => {{
+        document.getElementById('RTL').textContent = "Volviendo a casa...";
     }});
 }
 
